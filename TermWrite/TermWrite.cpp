@@ -159,6 +159,14 @@ void enable_raw_mode() {
 	std::atexit([]() { tcsetattr(STDIN_FILENO, TCSANOW, &original); });
 }
 
+void enable_cooked_mode() {
+	struct termios tty;
+	tcgetattr(STDIN_FILENO, &tty); // Get current terminal settings
+
+	tty.c_lflag |= (ICANON | ECHO); // Enable canonical mode & echo
+	tcsetattr(STDIN_FILENO, TCSANOW, &tty); // Apply settings
+}
+
 char key() {
 	char ch;
 	read(STDIN_FILENO, &ch, 1);
@@ -205,7 +213,7 @@ void render(int row, int column, bool movemode) {
 			line_content = " ";
 		}
 
-		// Create current line with line number
+		// Create current line
 		std::string current_line = std::to_string(line_num) + " " + line_content;
 
 		// Check if line needs update
@@ -214,19 +222,21 @@ void render(int row, int column, bool movemode) {
 		}
 	}
 
-	// Build status bar content
+	// Info bar
 	std::string status_bar_content =
 		(movemode ? "Move Mode " : "Write Mode ") +
 		std::to_string(row) + ":" + std::to_string(column) + " " +
 		(saved ? "*saved*" : "*not saved*");
 
-	// Update status bar
+	// Update info bar
 	buffer << "\033[" << term_height << ";1H"
 		<< GRAYBG << WHITE << " " << status_bar_content << "\033[K" << BLACKBG << WHITE;
 
-	// Flush all changes
+	// Delete changes
 	std::cout << buffer.str() << std::flush;
 	prev_display_lines.clear();
+
+	std::cout << "\033[?25h" << std::flush;
 }
 #endif
 
@@ -288,6 +298,9 @@ void save_file(char* filename) {
 }
 
 void save_gui() {
+#ifdef not _WIN32
+	enter_cooked_mode();
+#endif
 	CLEAR_SCREEN;
 	move_cursor(1, 1);
 	std::cout << "Do you wish to save it (y/n): ";
@@ -301,6 +314,9 @@ void save_gui() {
 		char filename[501] = ""; std::cin.getline(filename, 500);
 		save_file(filename);
 	}
+#ifdef not _WIN32
+	enter_raw_mode();
+#endif
 }
 
 int edit_text() {
@@ -374,7 +390,7 @@ int edit_text() {
 			else if (keycap == 127) {
 				
 			}
-			else if (keycap == 13) { //newline
+			else if (keycap == 13|| keycap == 10) { //newline
 				if (column > term_width - 3) start_column = 1, end_column = term_width - 3;
 				std::string rest;
 				rest = lines[row].substr(column-1, lines[row].length());
@@ -405,7 +421,7 @@ int edit_text() {
 int main(int argc, char* argv[]) {
 	//std::cout << "\033[2J";
 	CLEAR_SCREEN;
-#ifdef __linux__
+#ifdef not _WIN32
 	enable_raw_mode();
 #endif
 	if (argc == 1) {
