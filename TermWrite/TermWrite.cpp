@@ -45,107 +45,6 @@ void move_cursor(int row, int column) {
 
 	SetConsoleCursorPosition(hStdout, position);
 }
-#else
-#define CLEAR_SCREEN std::cout<<"\033[2J\033[H";
-#include <sys/ioctl.h>
-#include <stdio.h>
-#include <termios.h>
-#include <unistd.h>
-void move_cursor(int row, int column) {
-	std::cout << "\033[" << row << ';' << column + nrdig(row) + 1 << 'H'; //\033[%d;%dH
-}
-void setTerminalToRaw() {
-	struct termios newt;
-	tcgetattr(STDIN_FILENO, &newt);
-	newt.c_lflag &= ~(ICANON | ECHO);  // Disable canonical mode and echo
-	newt.c_cc[VMIN] = 1;              // Minimum number of characters to read
-	newt.c_cc[VTIME] = 0;             // Timeout for read (0 for no timeout)
-	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-}
-
-void resetTerminal() {
-	struct termios newt;
-	tcgetattr(STDIN_FILENO, &newt);
-	newt.c_lflag |= (ICANON | ECHO);
-	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-}
-
-char key() {
-	setTerminalToRaw();
-	char ch;
-	read(STDIN_FILENO, &ch, 1);
-	resetTerminal();
-	return ch;
-}
-int getcolumns() {
-	struct winsize w;
-	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-
-	return w.ws_col;
-}
-int getrows() {
-	struct winsize w;
-	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-
-	return w.ws_row;
-}
-#endif
-
-#define RED "\033[31m"
-#define GREEN "\033[32m"
-#define YELLOW "\033[33m"
-#define WHITE "\033[37m"
-#define BLUE "\033[34m"
-#define GRAY "\033[90m"
-#define BLACK "\033[30m"
-
-#define REDBG "\033[41m"
-#define GREENBG "\033[42m"
-#define YELLOWBG "\033[43m"
-#define WHITEBG "\033[47m"
-#define BLUEBG "\033[44m"
-#define GRAYBG "\033[100m"
-#define BLACKBG "\033[40m"
-
-std::vector <std::string> lines;
-int term_height = getrows(), term_width = getcolumns();
-int start_row = 1, end_row=term_height-2, start_column=1, end_column=term_width-3;
-bool saved = 0;
-/*
-void render(int row, int column, bool movemode) {
-	std::cout << BLACKBG << WHITE;
-	CLEAR_SCREEN;
-	move_cursor(1, -2);
-	for (int i = start_row; i <= end_row && i < lines.size(); i++) {
-		if (lines[i].length()) {
-			std::string aux;
-			int line_length = lines[i].length();
-			int start = std::min(start_column - 1, line_length);
-			int length = std::max(0, std::min(end_column - start - 2, line_length - start));
-
-			aux = lines[i].substr(start, length);
-			
-			if (i == lines.size() - 1) std::cout << i << ' ' << aux;
-			else std::cout << i << ' ' << aux << '\n';
-		}
-		else {
-			if (i == lines.size() - 1) std::cout << i << ' ' << " ";
-			else std::cout << i << ' ' << " " << '\n';
-		}
-	}
-
-	move_cursor(term_height, -2);
-	std::cout << "                                                 ";
-	move_cursor(term_height, -2);
-	std::cout << GRAYBG << WHITE;
-	if (!movemode) std::cout << "Write Mode ";
-	else std::cout << "Move Mode ";
-	std::cout << row << ' ' << column << "    ";
-	if (!saved) std::cout << "*not saved*";
-	else std::cout << "*saved*";
-	std::cout << BLACKBG << WHITE;
-}*/
-
 void render(int row, int column, bool movemode) {
 	static int prev_start_row = -1, prev_start_column = -1;
 	static int prev_term_height = -1, prev_term_width = -1;
@@ -220,6 +119,132 @@ void render(int row, int column, bool movemode) {
 	prev_column = column;
 	prev_saved = saved;
 }
+#else
+#define CLEAR_SCREEN std::cout<<"\033[2J\033[H";
+#include <sys/ioctl.h>
+#include <stdio.h>
+#include <termios.h>
+#include <unistd.h>
+void move_cursor(int row, int column) {
+	std::cout << "\033[" << row << ';' << column + nrdig(row) + 1 << 'H'; //\033[%d;%dH
+}
+void enable_raw_mode() {
+	static struct termios original;
+	tcgetattr(STDIN_FILENO, &original);
+
+	struct termios raw = original;
+	raw.c_lflag &= ~(ICANON | ECHO);
+	raw.c_cc[VMIN] = 1;
+	raw.c_cc[VTIME] = 0;
+	tcsetattr(STDIN_FILENO, TCSANOW, &raw);
+
+	std::atexit([]() { tcsetattr(STDIN_FILENO, TCSANOW, &original); });
+}
+
+char key() {
+	char ch;
+	read(STDIN_FILENO, &ch, 1);
+	return ch;
+}
+int getcolumns() {
+	struct winsize w;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+
+	return w.ws_col;
+}
+int getrows() {
+	struct winsize w;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+
+	return w.ws_row;
+}
+void render(int row, int column, bool movemode) {
+	static std::vector<std::string> prev_display_lines;
+	std::stringstream buffer;
+
+	// Calculate visible lines
+	const int content_height = term_height - 2;
+	const int content_width = term_width - 3;
+
+	// Build screen buffer
+	for (int i = 0; i < content_height; i++) {
+		int line_num = start_row + i;
+		std::string line_content;
+
+		if (line_num < lines.size()) {
+			// Existing line processing
+		}
+
+		// Only update changed lines
+		if (prev_display_lines.size() <= i || prev_display_lines[i] != current_line) {
+			buffer << "\033[" << (i + 1) << ";1H" << current_line << "\033[K";
+		}
+	}
+
+	// Update status bar
+	buffer << "\033[" << term_height << ";1H" << status_bar_content << "\033[K";
+
+	// Flush all changes at once
+	std::cout << buffer.str() << std::flush;
+}
+#endif
+
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define YELLOW "\033[33m"
+#define WHITE "\033[37m"
+#define BLUE "\033[34m"
+#define GRAY "\033[90m"
+#define BLACK "\033[30m"
+
+#define REDBG "\033[41m"
+#define GREENBG "\033[42m"
+#define YELLOWBG "\033[43m"
+#define WHITEBG "\033[47m"
+#define BLUEBG "\033[44m"
+#define GRAYBG "\033[100m"
+#define BLACKBG "\033[40m"
+
+std::vector <std::string> lines;
+int term_height = getrows(), term_width = getcolumns();
+int start_row = 1, end_row=term_height-2, start_column=1, end_column=term_width-3;
+bool saved = 0;
+/*
+void render(int row, int column, bool movemode) {
+	std::cout << BLACKBG << WHITE;
+	CLEAR_SCREEN;
+	move_cursor(1, -2);
+	for (int i = start_row; i <= end_row && i < lines.size(); i++) {
+		if (lines[i].length()) {
+			std::string aux;
+			int line_length = lines[i].length();
+			int start = std::min(start_column - 1, line_length);
+			int length = std::max(0, std::min(end_column - start - 2, line_length - start));
+
+			aux = lines[i].substr(start, length);
+			
+			if (i == lines.size() - 1) std::cout << i << ' ' << aux;
+			else std::cout << i << ' ' << aux << '\n';
+		}
+		else {
+			if (i == lines.size() - 1) std::cout << i << ' ' << " ";
+			else std::cout << i << ' ' << " " << '\n';
+		}
+	}
+
+	move_cursor(term_height, -2);
+	std::cout << "                                                 ";
+	move_cursor(term_height, -2);
+	std::cout << GRAYBG << WHITE;
+	if (!movemode) std::cout << "Write Mode ";
+	else std::cout << "Move Mode ";
+	std::cout << row << ' ' << column << "    ";
+	if (!saved) std::cout << "*not saved*";
+	else std::cout << "*saved*";
+	std::cout << BLACKBG << WHITE;
+}*/
+
+
 
 bool open_file(char* filename) {
 	std::ifstream f(filename);
@@ -270,10 +295,10 @@ int edit_text() {
 	while (true) {
 		term_height = getrows(), term_width = getcolumns();
 
-		if (row >= term_height - 2 && column >= term_width - 3) move_cursor(term_height - 2, term_width - 4);
-		else if (row >= term_height - 2)  move_cursor(term_height - 2, column);
-		else if (column >= term_width - 3) move_cursor(row, term_width - 4);
-		else move_cursor(row, column);
+		if (row >= term_height - 2 && column >= term_width - 3) move_cursor(term_height - 2, term_width - 2);
+		else if (row >= term_height - 2)  move_cursor(term_height - 2, column+2);
+		else if (column >= term_width - 3) move_cursor(row, term_width - 2);
+		else move_cursor(row, column+2);
 
 		char keycap = key();
 
@@ -361,6 +386,9 @@ int edit_text() {
 int main(int argc, char* argv[]) {
 	//std::cout << "\033[2J";
 	CLEAR_SCREEN;
+#ifdef __linux__
+	enable_raw_mode();
+#endif
 	if (argc == 1) {
 		edit_text();
 	}
