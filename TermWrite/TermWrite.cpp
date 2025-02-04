@@ -145,6 +145,7 @@ void render(int row, int column, bool movemode) {
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
+#include <sstream>
 void enable_raw_mode() {
 	static struct termios original;
 	tcgetattr(STDIN_FILENO, &original);
@@ -185,7 +186,6 @@ void render(int row, int column, bool movemode) {
 	static std::vector<std::string> prev_display_lines;
 	std::stringstream buffer;
 
-	// Calculate visible lines
 	const int content_height = term_height - 2;
 	const int content_width = term_width - 3;
 
@@ -194,25 +194,41 @@ void render(int row, int column, bool movemode) {
 		int line_num = start_row + i;
 		std::string line_content;
 
-		if (line_num < lines.size()) {
-			// Existing line processing
+		if (line_num < lines.size() && line_num >= 0) {
+			const auto& line = lines[line_num];
+			int start = std::max(0, start_column - 1);
+			start = std::min(start, static_cast<int>(line.length()));
+			int length = std::min(content_width, static_cast<int>(line.length()) - start);
+			line_content = line.substr(start, length);
+		}
+		else {
+			line_content = " ";
 		}
 
-		// Only update changed lines
-		if (prev_display_lines.size() <= i || prev_display_lines[i] != current_line) {
+		// Create current line with line number
+		std::string current_line = std::to_string(line_num) + " " + line_content;
+
+		// Check if line needs update
+		if (i >= prev_display_lines.size() || prev_display_lines[i] != current_line) {
 			buffer << "\033[" << (i + 1) << ";1H" << current_line << "\033[K";
 		}
 	}
 
-	// Update status bar
-	buffer << "\033[" << term_height << ";1H" << status_bar_content << "\033[K";
+	// Build status bar content
+	std::string status_bar_content =
+		(movemode ? "Move Mode " : "Write Mode ") +
+		std::to_string(row) + ":" + std::to_string(column) + " " +
+		(saved ? "*saved*" : "*not saved*");
 
-	// Flush all changes at once
+	// Update status bar
+	buffer << "\033[" << term_height << ";1H"
+		<< GRAYBG << WHITE << " " << status_bar_content << "\033[K" << BLACKBG << WHITE;
+
+	// Flush all changes
 	std::cout << buffer.str() << std::flush;
+	prev_display_lines.clear();
 }
 #endif
-
-
 
 /*
 void render(int row, int column, bool movemode) {
@@ -248,8 +264,6 @@ void render(int row, int column, bool movemode) {
 	else std::cout << "*saved*";
 	std::cout << BLACKBG << WHITE;
 }*/
-
-
 
 bool open_file(char* filename) {
 	std::ifstream f(filename);
