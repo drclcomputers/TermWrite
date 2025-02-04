@@ -307,7 +307,7 @@ void save_gui() {
 #ifndef _WIN32
 	enable_cooked_mode();
 #endif
-	CLEAR_SCREEN;
+	//CLEAR_SCREEN;
 	move_cursor(1, 1);
 	std::cout << "Do you wish to save it (y/n): ";
 	char r = key();
@@ -445,6 +445,10 @@ int main(int argc, char* argv[]) {
 	}
 	else std::cout << "Too many arguments passed!\nType 'termwrite' to create a new file\nType 'termwrite <filename>' to open a document";
 	
+#ifndef _WIN32
+	enable_cooked_mode();
+#endif
+
 	CLEAR_SCREEN;
 	
 	return 0;
