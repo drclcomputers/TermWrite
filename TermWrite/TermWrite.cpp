@@ -311,15 +311,14 @@ void save_gui() {
 	std::cout.flush();
 	tcflush(STDIN_FILENO, TCIFLUSH);
 #endif
-	//CLEAR_SCREEN;
-	move_cursor(1, 1);
+	move_cursor(1, 4);
 	std::cout << "Do you wish to save it (y/n): ";
 	char r = key();
 	if (r == 'y') {
 		saved = 1;
 		move_cursor(1, 1);
 		std::cout << "                                                     ";
-		move_cursor(1, 1);
+		move_cursor(1, 4);
 		std::cout << "Input filename (max 500 characters): ";
 		char filename[501] = ""; std::cin.getline(filename, 500);
 		save_file(filename);
