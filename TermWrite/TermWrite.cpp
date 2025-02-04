@@ -1,4 +1,19 @@
 #pragma warning (disable : 4996)
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define YELLOW "\033[33m"
+#define WHITE "\033[37m"
+#define BLUE "\033[34m"
+#define GRAY "\033[90m"
+#define BLACK "\033[30m"
+
+#define REDBG "\033[41m"
+#define GREENBG "\033[42m"
+#define YELLOWBG "\033[43m"
+#define WHITEBG "\033[47m"
+#define BLUEBG "\033[44m"
+#define GRAYBG "\033[100m"
+#define BLACKBG "\033[40m"
 
 #include<iostream>
 #include<fstream>
@@ -14,6 +29,8 @@ int nrdig(int n) {
 	} while (n);
 	return s;
 }
+std::vector <std::string> lines;
+
 
 #ifdef _WIN32
 #define CLEAR_SCREEN system("cls")
@@ -39,6 +56,9 @@ int getrows() {
 	rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 	return rows;
 }
+int term_height = getrows(), term_width = getcolumns();
+int start_row = 1, end_row = term_height - 2, start_column = 1, end_column = term_width - 3;
+bool saved = 0;
 void move_cursor(int row, int column) {
 	HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 	COORD position = {column-1, row-1};
@@ -125,9 +145,6 @@ void render(int row, int column, bool movemode) {
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
-void move_cursor(int row, int column) {
-	std::cout << "\033[" << row << ';' << column + nrdig(row) + 1 << 'H'; //\033[%d;%dH
-}
 void enable_raw_mode() {
 	static struct termios original;
 	tcgetattr(STDIN_FILENO, &original);
@@ -157,6 +174,12 @@ int getrows() {
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 
 	return w.ws_row;
+}
+int term_height = getrows(), term_width = getcolumns();
+int start_row = 1, end_row = term_height - 2, start_column = 1, end_column = term_width - 3;
+bool saved = 0;
+void move_cursor(int row, int column) {
+	std::cout << "\033[" << row << ';' << column + nrdig(row) + 1 << 'H'; //\033[%d;%dH
 }
 void render(int row, int column, bool movemode) {
 	static std::vector<std::string> prev_display_lines;
@@ -189,26 +212,8 @@ void render(int row, int column, bool movemode) {
 }
 #endif
 
-#define RED "\033[31m"
-#define GREEN "\033[32m"
-#define YELLOW "\033[33m"
-#define WHITE "\033[37m"
-#define BLUE "\033[34m"
-#define GRAY "\033[90m"
-#define BLACK "\033[30m"
 
-#define REDBG "\033[41m"
-#define GREENBG "\033[42m"
-#define YELLOWBG "\033[43m"
-#define WHITEBG "\033[47m"
-#define BLUEBG "\033[44m"
-#define GRAYBG "\033[100m"
-#define BLACKBG "\033[40m"
 
-std::vector <std::string> lines;
-int term_height = getrows(), term_width = getcolumns();
-int start_row = 1, end_row=term_height-2, start_column=1, end_column=term_width-3;
-bool saved = 0;
 /*
 void render(int row, int column, bool movemode) {
 	std::cout << BLACKBG << WHITE;
