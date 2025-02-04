@@ -108,8 +108,7 @@ void move_cursor(int row, int column) {
 }
 
 void render(int row, int column, bool movemode) {
-	//system(CLEAR_SCREEN);
-	std::cout << "\033[2J";
+	system(CLEAR_SCREEN);
 	move_cursor(1, -2);
 	for (int i = start_row; i <= end_row && i < lines.size(); i++) {
 		if (lines[i].length()) {
@@ -164,7 +163,7 @@ void save_file(char* filename) {
 }
 
 void save_gui() {
-	std::cout << "\033[2J";
+	system(CLEAR_SCREEN);
 	move_cursor(1, -2);
 	std::cout << "Do you wish to save it (y/n): ";
 	char r = key();
@@ -244,19 +243,6 @@ int edit_text() {
 					--row;
 					if (row >= term_height - 2) start_row--, end_row--;
 				}
-				/*else if (row > 1 && lines[row].empty()) {
-					column = lines[row - 1].length() -1;
-					lines.erase(lines.begin() + row);
-					--row;
-					if (row >= term_height - 2) start_row--, end_row--;
-				}
-				else if (row > 1 && !lines[row].empty()) {
-					lines[row - 1].append(lines[row]);
-					column = lines[row - 1].length() - 1;
-					lines.erase(lines.begin() + row);
-					--row;
-					if (row >= term_height - 2) start_row--, end_row--;
-				}*/
 
 				if (saved) saved = 0;
 			}
@@ -292,7 +278,8 @@ int edit_text() {
 }
 
 int main(int argc, char* argv[]) {
-	std::cout << "\033[2J";
+	//std::cout << "\033[2J";
+	system(CLEAR_SCREEN);
 	if (argc == 1) {
 		edit_text();
 	}
