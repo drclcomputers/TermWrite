@@ -299,7 +299,7 @@ void save_file(char* filename) {
 
 void save_gui() {
 #ifndef _WIN32
-	enter_cooked_mode();
+	enable_cooked_mode();
 #endif
 	CLEAR_SCREEN;
 	move_cursor(1, 1);
@@ -315,7 +315,7 @@ void save_gui() {
 		save_file(filename);
 	}
 #ifndef _WIN32
-	enter_raw_mode();
+	enable_raw_mode();
 #endif
 }
 
