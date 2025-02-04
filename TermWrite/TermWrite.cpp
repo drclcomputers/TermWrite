@@ -9,6 +9,7 @@
 #ifdef _WIN32
 #define CLEAR_SCREEN "cls"
 #include<conio.h>
+#define NOMINMAX
 #include<windows.h>
 char key() {
 	return _getch();
@@ -113,8 +114,8 @@ void render(int row, int column, bool movemode) {
 		if (lines[i].length()) {
 			std::string aux;
 			int line_length = lines[i].length();
-			int start = min(start_column - 1, line_length);
-			int length = max(0, min(end_column - start - 2, line_length - start - 1));
+			int start = std::min(start_column - 1, line_length);
+			int length = std::max(0, std::min(end_column - start - 2, line_length - start - 1));
 
 			aux = lines[i].substr(start, length);
 			
