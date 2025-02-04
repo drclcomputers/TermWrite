@@ -16,7 +16,7 @@ int nrdig(int n) {
 }
 
 #ifdef _WIN32
-#define CLEAR_SCREEN "cls"
+#define CLEAR_SCREEN system("cls")
 #include<conio.h>
 #define NOMINMAX
 #include<windows.h>
@@ -46,7 +46,7 @@ void move_cursor(int row, int column) {
 	SetConsoleCursorPosition(hStdout, position);
 }
 #else
-#define CLEAR_SCREEN "clear"
+#define CLEAR_SCREEN std::cout<<"\033[2J\033[H";
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include <termios.h>
@@ -113,7 +113,7 @@ int start_row = 1, end_row=term_height-2, start_column=1, end_column=term_width-
 bool saved = 0;
 
 void render(int row, int column, bool movemode) {
-	system(CLEAR_SCREEN);
+	CLEAR_SCREEN;
 	move_cursor(1, -2);
 	for (int i = start_row; i <= end_row && i < lines.size(); i++) {
 		if (lines[i].length()) {
@@ -168,7 +168,7 @@ void save_file(char* filename) {
 }
 
 void save_gui() {
-	system(CLEAR_SCREEN);
+	CLEAR_SCREEN;
 	move_cursor(1, -2);
 	std::cout << "Do you wish to save it (y/n): ";
 	char r = key();
@@ -284,7 +284,7 @@ int edit_text() {
 
 int main(int argc, char* argv[]) {
 	//std::cout << "\033[2J";
-	system(CLEAR_SCREEN);
+	CLEAR_SCREEN;
 	if (argc == 1) {
 		edit_text();
 	}
@@ -298,7 +298,7 @@ int main(int argc, char* argv[]) {
 	}
 	else std::cout << "Too many arguments passed!\nType 'termwrite' to create a new file\nType 'termwrite <filename>' to open a document";
 	
-	system(CLEAR_SCREEN);
+	CLEAR_SCREEN;
 	
 	return 0;
 }
