@@ -140,7 +140,7 @@ void render(int row, int column, bool movemode) {
 	prev_saved = saved;
 }
 #else
-#define CLEAR_SCREEN std::cout<<"\033[2J\033[H";
+#define CLEAR_SCREEN system("clear");
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include <termios.h>
@@ -150,13 +150,19 @@ void enable_raw_mode() {
 	static struct termios original;
 	tcgetattr(STDIN_FILENO, &original);
 
+	std::cout << "\033[?25h";  // Ensure cursor starts visible
+	std::cout.flush();
+
 	struct termios raw = original;
 	raw.c_lflag &= ~(ICANON | ECHO);
 	raw.c_cc[VMIN] = 1;
 	raw.c_cc[VTIME] = 0;
 	tcsetattr(STDIN_FILENO, TCSANOW, &raw);
 
-	std::atexit([]() { tcsetattr(STDIN_FILENO, TCSANOW, &original); });
+	std::atexit([]() {
+		tcsetattr(STDIN_FILENO, TCSANOW, &original);
+		std::cout << "\033[?25h";  // Restore cursor on exit
+	});
 }
 
 void enable_cooked_mode() {
@@ -188,7 +194,7 @@ int term_height = getrows(), term_width = getcolumns();
 int start_row = 1, end_row = term_height - 2, start_column = 1, end_column = term_width - 3;
 bool saved = 0;
 void move_cursor(int row, int column) {
-	std::cout << "\033[" << row << ';' << column + nrdig(row) + 1 << 'H'; //\033[%d;%dH
+	std::cout << "\033[?25h\033[" << row << ';' << column + nrdig(row) + 1 << 'H'; //\033[%d;%dH
 }
 void render(int row, int column, bool movemode) {
 	static std::vector<std::string> prev_display_lines;
@@ -236,7 +242,7 @@ void render(int row, int column, bool movemode) {
 	std::cout << buffer.str() << std::flush;
 	prev_display_lines.clear();
 
-	std::cout << "\033[?25h" << std::flush;
+	std::cout << "\033[?25h";
 }
 #endif
 
