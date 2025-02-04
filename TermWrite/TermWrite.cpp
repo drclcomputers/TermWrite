@@ -298,7 +298,7 @@ void save_file(char* filename) {
 }
 
 void save_gui() {
-#ifdef not _WIN32
+#ifndef _WIN32
 	enter_cooked_mode();
 #endif
 	CLEAR_SCREEN;
@@ -314,7 +314,7 @@ void save_gui() {
 		char filename[501] = ""; std::cin.getline(filename, 500);
 		save_file(filename);
 	}
-#ifdef not _WIN32
+#ifndef _WIN32
 	enter_raw_mode();
 #endif
 }
@@ -421,7 +421,7 @@ int edit_text() {
 int main(int argc, char* argv[]) {
 	//std::cout << "\033[2J";
 	CLEAR_SCREEN;
-#ifdef not _WIN32
+#ifndef _WIN32
 	enable_raw_mode();
 #endif
 	if (argc == 1) {
