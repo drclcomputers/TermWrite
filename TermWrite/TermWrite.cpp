@@ -175,8 +175,10 @@ void enable_cooked_mode() {
 
 char key() {
 	char ch;
-	read(STDIN_FILENO, &ch, 1);
-	return ch;
+	while (true) {
+		ssize_t count = read(STDIN_FILENO, &ch, 1);
+		if (count > 0) return ch;
+	}
 }
 int getcolumns() {
 	struct winsize w;
