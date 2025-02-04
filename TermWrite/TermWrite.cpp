@@ -306,6 +306,10 @@ void save_file(char* filename) {
 void save_gui() {
 #ifndef _WIN32
 	enable_cooked_mode();
+	CLEAR_SCREEN;
+	std::cout << "\033[?25h";  // Force cursor visibility
+	std::cout.flush();
+	tcflush(STDIN_FILENO, TCIFLUSH);
 #endif
 	//CLEAR_SCREEN;
 	move_cursor(1, 1);
@@ -319,9 +323,12 @@ void save_gui() {
 		std::cout << "Input filename (max 500 characters): ";
 		char filename[501] = ""; std::cin.getline(filename, 500);
 		save_file(filename);
+		return;
 	}
 #ifndef _WIN32
 	enable_raw_mode();
+	CLEAR_SCREEN;
+	render(1, 1, 0);
 #endif
 }
 
