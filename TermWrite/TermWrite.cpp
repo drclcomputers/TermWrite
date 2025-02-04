@@ -327,7 +327,7 @@ void save_gui() {
 
 int edit_text() {
 	int row = 1, column = 1;
-	bool move_mode = 1;
+	bool move_mode = 0;
 	for (int i = lines.size(); i <= row; i++)
 		lines.push_back("");
 	for (int i = lines[row].length(); i <= column; i++)
@@ -340,6 +340,8 @@ int edit_text() {
 		else if (row >= term_height - 2)  move_cursor(term_height - 2, column+2);
 		else if (column >= term_width - 3) move_cursor(row, term_width - 2);
 		else move_cursor(row, column+2);
+
+		render(row, column, move_mode);
 
 		char keycap = key();
 
@@ -419,7 +421,7 @@ int edit_text() {
 		for (int i = lines[row].length(); i <= column; i++)
 			lines[row].push_back(' ');
 
-		render(row, column, move_mode);
+		
 	}
 	return 1;
 }
