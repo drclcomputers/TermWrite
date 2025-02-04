@@ -41,7 +41,7 @@ int getrows() {
 }
 void move_cursor(int row, int column) {
 	HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-	COORD position = {column+nrdig(row), row-1};
+	COORD position = {column-1, row-1};
 
 	SetConsoleCursorPosition(hStdout, position);
 }
@@ -111,8 +111,9 @@ std::vector <std::string> lines;
 int term_height = getrows(), term_width = getcolumns();
 int start_row = 1, end_row=term_height-2, start_column=1, end_column=term_width-3;
 bool saved = 0;
-
+/*
 void render(int row, int column, bool movemode) {
+	std::cout << BLACKBG << WHITE;
 	CLEAR_SCREEN;
 	move_cursor(1, -2);
 	for (int i = start_row; i <= end_row && i < lines.size(); i++) {
@@ -136,13 +137,88 @@ void render(int row, int column, bool movemode) {
 	move_cursor(term_height, -2);
 	std::cout << "                                                 ";
 	move_cursor(term_height, -2);
-	std::cout << GRAYBG;
+	std::cout << GRAYBG << WHITE;
 	if (!movemode) std::cout << "Write Mode ";
 	else std::cout << "Move Mode ";
 	std::cout << row << ' ' << column << "    ";
 	if (!saved) std::cout << "*not saved*";
 	else std::cout << "*saved*";
-	std::cout << BLACKBG;
+	std::cout << BLACKBG << WHITE;
+}*/
+
+void render(int row, int column, bool movemode) {
+	static int prev_start_row = -1, prev_start_column = -1;
+	static int prev_term_height = -1, prev_term_width = -1;
+	static std::vector<std::string> prev_display_lines;
+	static bool prev_movemode = !movemode;
+	static int prev_row = -1, prev_column = -1;
+	static bool prev_saved = !saved;
+
+	bool viewport_changed = (start_row != prev_start_row || start_column != prev_start_column ||
+		term_height != prev_term_height || term_width != prev_term_width);
+	bool status_changed = (movemode != prev_movemode || row != prev_row || column != prev_column || saved != prev_saved);
+
+	int content_height = term_height - 2;
+	int content_width = term_width - 3;
+	end_row = std::min(start_row + content_height - 1, static_cast<int>(lines.size()) - 1);
+	end_column = start_column + content_width - 1;
+
+	std::vector<std::string> current_display_lines;
+	current_display_lines.reserve(content_height);
+
+	for (int terminal_line = 0; terminal_line < content_height; ++terminal_line) {
+		int line_num = start_row + terminal_line;
+		std::string line_content;
+
+		if (line_num < lines.size()) {
+			const std::string& line = lines[line_num];
+			int start = std::max(0, start_column - 1);
+			start = std::min(start, static_cast<int>(line.length()));
+			int length = std::min(content_width, static_cast<int>(line.length()) - start);
+			line_content = line.substr(start, length);
+		}
+		else {
+			line_content = " ";
+		}
+
+		current_display_lines.push_back(std::to_string(line_num) + " " + line_content);
+	}
+
+	if (viewport_changed || prev_display_lines.empty()) {
+		// Full redraw
+		for (int terminal_line = 0; terminal_line < content_height; ++terminal_line) {
+			move_cursor(terminal_line + 1, 1);
+			std::cout << current_display_lines[terminal_line] << "\033[K";
+		}
+		prev_display_lines = current_display_lines;
+	}
+	else {
+		// Partial redraw
+		for (int terminal_line = 0; terminal_line < content_height; ++terminal_line) {
+			if (terminal_line >= prev_display_lines.size() ||
+				current_display_lines[terminal_line] != prev_display_lines[terminal_line]) {
+				move_cursor(terminal_line + 1, 1);
+				std::cout << current_display_lines[terminal_line] << "\033[K";
+			}
+		}
+		prev_display_lines = current_display_lines;
+	}
+
+	// Update status bar if changed
+	if (status_changed) {
+		move_cursor(term_height, 1);
+		std::cout << GRAYBG << WHITE << " " << (movemode ? "Move Mode " : "Write Mode ") << row << ":" << column << " " << (saved ? "*saved*  " : "*not saved*") << "\033[K" << BLACKBG << WHITE;
+	}
+
+	// Update previous state
+	prev_start_row = start_row;
+	prev_start_column = start_column;
+	prev_term_height = term_height;
+	prev_term_width = term_width;
+	prev_movemode = movemode;
+	prev_row = row;
+	prev_column = column;
+	prev_saved = saved;
 }
 
 bool open_file(char* filename) {
@@ -169,14 +245,14 @@ void save_file(char* filename) {
 
 void save_gui() {
 	CLEAR_SCREEN;
-	move_cursor(1, -2);
+	move_cursor(1, 1);
 	std::cout << "Do you wish to save it (y/n): ";
 	char r = key();
 	if (r == 'y') {
 		saved = 1;
-		move_cursor(1, -2);
+		move_cursor(1, 1);
 		std::cout << "                                                     ";
-		move_cursor(1, -2);
+		move_cursor(1, 1);
 		std::cout << "Input filename (max 500 characters): ";
 		char filename[501] = ""; std::cin.getline(filename, 500);
 		save_file(filename);
