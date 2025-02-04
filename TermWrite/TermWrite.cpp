@@ -6,6 +6,15 @@
 #include<string>
 #include<vector>
 
+int nrdig(int n) {
+	int s = 0;
+	do {
+		n /= 10;
+		s++;
+	} while (n);
+	return s;
+}
+
 #ifdef _WIN32
 #define CLEAR_SCREEN "cls"
 #include<conio.h>
@@ -30,12 +39,21 @@ int getrows() {
 	rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 	return rows;
 }
+void move_cursor(int row, int column) {
+	HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+	COORD position = {column+nrdig(row), row-1};
+
+	SetConsoleCursorPosition(hStdout, position);
+}
 #else
 #define CLEAR_SCREEN "clear"
 #include <sys/ioctl.h>
 #include <stdio.h>
-#include<termios.h>
+#include <termios.h>
 #include <unistd.h>
+void move_cursor(int row, int column) {
+	std::cout << "\033[" << row << ';' << column + nrdig(row) + 1 << 'H'; //\033[%d;%dH
+}
 void setTerminalToRaw() {
 	struct termios newt;
 	tcgetattr(STDIN_FILENO, &newt);
@@ -93,19 +111,6 @@ std::vector <std::string> lines;
 int term_height = getrows(), term_width = getcolumns();
 int start_row = 1, end_row=term_height-2, start_column=1, end_column=term_width-3;
 bool saved = 0;
-
-int nrdig(int n) {
-	int s = 0;
-	do {
-		n /= 10;
-		s++;
-	} while (n);
-	return s;
-}
-
-void move_cursor(int row, int column) {
-	std::cout << "\033[" << row << ';' << column+nrdig(row)+1 << 'H'; //\033[%d;%dH
-}
 
 void render(int row, int column, bool movemode) {
 	system(CLEAR_SCREEN);
