@@ -150,19 +150,17 @@ void enable_raw_mode() {
 	static struct termios original;
 	tcgetattr(STDIN_FILENO, &original);
 
-	std::cout << "\033[?25h";  // Ensure cursor starts visible
-	std::cout.flush();
-
 	struct termios raw = original;
-	raw.c_lflag &= ~(ICANON | ECHO);
+	// Proper raw mode configuration
+	raw.c_lflag &= ~(ICANON | ECHO | IEXTEN | ISIG);
+	raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+	raw.c_cflag &= ~(CSIZE | PARENB);
+	raw.c_cflag |= CS8;
+	raw.c_oflag &= ~(OPOST);
 	raw.c_cc[VMIN] = 1;
 	raw.c_cc[VTIME] = 0;
-	tcsetattr(STDIN_FILENO, TCSANOW, &raw);
 
-	std::atexit([]() {
-		tcsetattr(STDIN_FILENO, TCSANOW, &original);
-		std::cout << "\033[?25h";  // Restore cursor on exit
-	});
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
 void enable_cooked_mode() {
@@ -175,10 +173,8 @@ void enable_cooked_mode() {
 
 char key() {
 	char ch;
-	while (true) {
-		ssize_t count = read(STDIN_FILENO, &ch, 1);
-		if (count > 0) return ch;
-	}
+	while (read(STDIN_FILENO, &ch, 1) != 1);
+	return ch;
 }
 int getcolumns() {
 	struct winsize w;
