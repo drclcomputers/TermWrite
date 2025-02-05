@@ -428,7 +428,7 @@ int main(int argc, char* argv[]) {
 		edit_text();
 	}
 	else if (argc == 2) {
-		if (strcmp("-h", argv[1]) == 0 || strcmp("-help", argv[1]) {
+		if (strcmp("-h", argv[1]) == 0 || strcmp("-help", argv[1]) ){
 			std::cout<<"TermWrite - ver 1.0\n\nWrite 'termwrite' to create a new file\nWrite 'termwrite <filename>' to open a file\n";
 			return 0;
 		}
