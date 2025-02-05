@@ -295,7 +295,7 @@ void save_file(char* filename) {
 }
 
 void save_gui() {
-#ifdef __linux_
+#ifdef __linux__
 	enable_cooked_mode();
 	CLEAR_SCREEN;
 	std::cout << "\033[?25h";  // Force cursor visibility
@@ -315,7 +315,7 @@ void save_gui() {
 		save_file(filename);
 		return;
 	}
-#ifdef __linux_
+#ifdef __linux__
 	enable_raw_mode();
 	CLEAR_SCREEN;
 	render(1, 1, 0);
@@ -424,7 +424,7 @@ int edit_text() {
 int main(int argc, char* argv[]) {
 	//std::cout << "\033[2J";
 	CLEAR_SCREEN;
-#ifdef __linux_
+#ifdef __linux__
 	enable_raw_mode();
 #endif
 	if (argc == 1) {
@@ -440,7 +440,7 @@ int main(int argc, char* argv[]) {
 	}
 	else std::cout << "Too many arguments passed!\nType 'termwrite' to create a new file\nType 'termwrite <filename>' to open a document";
 	
-#ifdef __linux_
+#ifdef __linux__
 	enable_cooked_mode();
 #endif
 
