@@ -147,20 +147,13 @@ void render(int row, int column, bool movemode) {
 #include <unistd.h>
 #include <sstream>
 void enable_raw_mode() {
-	static struct termios original;
-	tcgetattr(STDIN_FILENO, &original);
-
-	struct termios raw = original;
-	// Proper raw mode configuration
-	raw.c_lflag &= ~(ICANON | ECHO | IEXTEN | ISIG);
-	raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-	raw.c_cflag &= ~(CSIZE | PARENB);
-	raw.c_cflag |= CS8;
-	raw.c_oflag &= ~(OPOST);
-	raw.c_cc[VMIN] = 1;
-	raw.c_cc[VTIME] = 0;
-
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+	struct termios oldt, newt;
+	tcgetattr(STDIN_FILENO, &oldt);         // Save current terminal settings
+	newt = oldt;
+	newt.c_lflag &= ~(ICANON | ECHO);      // Disable canonical mode and echo
+	newt.c_cc[VMIN] = 1;                   // Read at least 1 character
+	newt.c_cc[VTIME] = 0;                  // No timeout
+	tcsetattr(STDIN_FILENO, TCSANOW, &newt); // Apply new settings
 }
 
 void enable_cooked_mode() {
