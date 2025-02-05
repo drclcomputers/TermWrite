@@ -440,7 +440,7 @@ int main(int argc, char* argv[]) {
 		saved = 1;
 		edit_text();
 	}
-	else std::cout << "Too many arguments passed!\nType 'termwrite' to create a new file\nType 'termwrite <filename>' to open a document";
+	else std::cout << "Too many arguments passed!\nType 'termwrite' to create a new file\nType 'termwrite <filename>' to open a file\n";
 	
 #ifdef __linux__
 	enable_cooked_mode();
