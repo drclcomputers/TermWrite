@@ -312,16 +312,14 @@ void save_gui() {
 		saved = 1;
 		move_cursor(1, 1);
 		std::cout << "                                                     ";
-		move_cursor(1, 4);
+		move_cursor(1, 1);
 		std::cout << "Input filename (max 500 characters): ";
 		char filename[501] = ""; std::cin.getline(filename, 500);
 		save_file(filename);
-		return;
 	}
 #ifdef __linux__
 	enable_raw_mode();
 	CLEAR_SCREEN;
-	render(1, 1, 0);
 #endif
 }
 
