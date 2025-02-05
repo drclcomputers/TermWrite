@@ -301,7 +301,13 @@ void save_gui() {
 #endif
 	move_cursor(1, 1);
 	std::cout << "Do you wish to save it (y/n): " << std::flush;
+#ifdef __linux__
+	enable_raw_mode();
+#endif
 	char r = key();
+#ifdef __linux__
+	enable_cooked_mode();
+#endif
 	if (r == 'y') {
 		saved = 1;
 		move_cursor(1, 1);
