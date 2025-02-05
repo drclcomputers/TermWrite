@@ -226,13 +226,13 @@ void render(int row, int column, bool movemode) {
 		(saved ? "*saved*" : "*not saved*");
 
 	// Update info bar
-	buffer << "\033[" << term_height << ";1H"
-		<< GRAYBG << WHITE << " " << status_bar_content << "\033[K" << BLACKBG << WHITE;
+	buffer << "\033[" << term_height << ";1H" << GRAYBG << WHITE << " " << status_bar_content << "\033[K" << BLACKBG << WHITE;
 
 	// Delete changes
 	std::cout << buffer.str() << std::flush;
 	prev_display_lines.clear();
 
+	move_cursor(row, column);
 	std::cout << "\033[?25h";
 }
 #endif
@@ -298,9 +298,6 @@ void save_gui() {
 #ifdef __linux__
 	enable_cooked_mode();
 	CLEAR_SCREEN;
-	std::cout << "\033[?25h";  // Force cursor visibility
-	std::cout.flush();
-	tcflush(STDIN_FILENO, TCIFLUSH);
 #endif
 	move_cursor(1, 4);
 	std::cout << "Do you wish to save it (y/n): ";
