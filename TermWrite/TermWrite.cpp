@@ -330,11 +330,11 @@ int edit_text() {
 	render(row, column, move_mode);
 	while (true) {
 		term_height = getrows(), term_width = getcolumns();
-		/*
+		
 		if (row >= term_height - 2 && column >= term_width - 3) move_cursor(term_height - 2, term_width - 2);
 		else if (row >= term_height - 2) move_cursor(term_height - 2, column+2);
 		else if (column >= term_width - 3) move_cursor(row, term_width - 2);
-		else move_cursor(row, column+2);*/
+		else move_cursor(row, column+2);
 
 		char keycap = key();
 
@@ -380,7 +380,7 @@ int edit_text() {
 				else if (row > 1) {
 					if (!lines[row].empty()) lines[row - 1].append(lines[row]);
 					column = lines[row - 1].length() - 1;
-					if (column > term_width - 3) start_column = column - term_width + 3, end_column = column;
+					if (column > term_width - 3) start_column=column-term_width+3, end_column = column;
 					lines.erase(lines.begin() + row);
 					--row;
 					if (row >= term_height - 2) start_row--, end_row--;
@@ -389,13 +389,13 @@ int edit_text() {
 				if (saved) saved = 0;
 			}
 			else if (keycap == 127) {
-
+				
 			}
-			else if (keycap == 13 || keycap == 10) { //newline
+			else if (keycap == 13|| keycap == 10) { //newline
 				if (column > term_width - 3) start_column = 1, end_column = term_width - 3;
 				std::string rest;
-				rest = lines[row].substr(column - 1, lines[row].length());
-				lines[row].erase(column - 1, lines[row].length());
+				rest = lines[row].substr(column-1, lines[row].length());
+				lines[row].erase(column-1, lines[row].length());
 				lines.insert(lines.begin() + row + 1, rest);
 				column = 1;
 				++row;
@@ -415,13 +415,6 @@ int edit_text() {
 			lines[row].push_back(' ');
 
 		render(row, column, move_mode);
-
-		//#ifdef __linux_
-		if (row >= term_height - 2 && column >= term_width - 3) move_cursor(term_height - 2, term_width - 2);
-		else if (row >= term_height - 2) move_cursor(term_height - 2, column + 2);
-		else if (column >= term_width - 3) move_cursor(row, term_width - 2);
-		else move_cursor(row, column + 2);
-		//#endif
 	}
 	return 1;
 }
