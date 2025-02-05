@@ -320,6 +320,12 @@ void save_gui() {
 #endif
 }
 
+void linux_print_cursor() {
+#ifdef __linux__
+	std::cout << char(220);
+#endif
+}
+
 int edit_text() {
 	int row = 1, column = 1;
 	bool move_mode = 0;
@@ -331,10 +337,22 @@ int edit_text() {
 	while (true) {
 		term_height = getrows(), term_width = getcolumns();
 
-		if (row >= term_height - 2 && column >= term_width - 3) move_cursor(term_height - 2, term_width - 2);
-		else if (row >= term_height - 2)  move_cursor(term_height - 2, column+2);
-		else if (column >= term_width - 3) move_cursor(row, term_width - 2);
-		else move_cursor(row, column+2);
+		if (row >= term_height - 2 && column >= term_width - 3) {
+			move_cursor(term_height - 2, term_width - 2);
+			linux_print_cursor();
+		}
+		else if (row >= term_height - 2) {
+			move_cursor(term_height - 2, column + 2);
+			linux_print_cursor();
+		}
+		else if (column >= term_width - 3) {
+			move_cursor(row, term_width - 2);
+			linux_print_cursor();
+		}
+		else {
+			move_cursor(row, column + 2);
+			linux_print_cursor();
+		}
 
 		char keycap = key();
 
