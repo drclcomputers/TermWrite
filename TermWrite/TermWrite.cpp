@@ -185,7 +185,7 @@ int term_height = getrows(), term_width = getcolumns();
 int start_row = 1, end_row = term_height - 2, start_column = 1, end_column = term_width - 3;
 bool saved = 0;
 void move_cursor(int row, int column) {
-	std::cout << "\033[?25h\033[" << row << ';' << column + nrdig(row) + 1 << 'H'; //\033[%d;%dH
+	std::cout << "\033[" << row << ';' << column + nrdig(row) + 1 << 'H'; //\033[%d;%dH
 }
 void render(int row, int column, bool movemode) {
 	static std::vector<std::string> prev_display_lines;
@@ -231,9 +231,6 @@ void render(int row, int column, bool movemode) {
 	// Delete changes
 	std::cout << buffer.str() << std::flush;
 	prev_display_lines.clear();
-
-	move_cursor(row, column);
-	std::cout << "\033[?25h";
 }
 #endif
 
