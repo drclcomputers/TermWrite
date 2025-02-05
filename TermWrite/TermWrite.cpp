@@ -322,7 +322,9 @@ void save_gui() {
 
 void linux_print_cursor() {
 #ifdef __linux__
+	enable_cooked_mode();
 	std::cout << char(220);
+	enable_raw_mode();
 #endif
 }
 
