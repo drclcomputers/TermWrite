@@ -345,8 +345,6 @@ int edit_text() {
 		else if (column >= term_width - 3) move_cursor(row, term_width - 2);
 		else move_cursor(row, column+2);
 
-		render(row, column, move_mode);
-
 		char keycap = key();
 
 		if (move_mode) {
@@ -425,7 +423,7 @@ int edit_text() {
 		for (int i = lines[row].length(); i <= column; i++)
 			lines[row].push_back(' ');
 
-		
+		render(row, column, move_mode);
 	}
 	return 1;
 }
