@@ -299,8 +299,8 @@ void save_gui() {
 	enable_cooked_mode();
 	CLEAR_SCREEN;
 #endif
-	move_cursor(1, 4);
-	std::cout << "Do you wish to save it (y/n): ";
+	move_cursor(1, 1);
+	std::cout << "Do you wish to save it (y/n): " << std::flush;
 	char r = key();
 	if (r == 'y') {
 		saved = 1;
@@ -428,6 +428,10 @@ int main(int argc, char* argv[]) {
 		edit_text();
 	}
 	else if (argc == 2) {
+		if (strcmp("-h", argv[1]) == 0 || strcmp("-help", argv[1]) {
+			std::cout<<"TermWrite - ver 1.0\n\nWrite 'termwrite' to create a new file\nWrite 'termwrite <filename>' to open a file\n";
+			return 0;
+		}
 		if (!open_file(argv[1])) {
 			std::cout << "File doesn't exist!";
 			return 0;
