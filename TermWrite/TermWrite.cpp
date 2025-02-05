@@ -332,16 +332,12 @@ int edit_text() {
 		term_height = getrows(), term_width = getcolumns();
 
 #ifdef __linux__
-		enable_cooked_mode();
+		render(row, column, move_mode);
 #endif
 		if (row >= term_height - 2 && column >= term_width - 3) move_cursor(term_height - 2, term_width - 2);
 		else if (row >= term_height - 2) move_cursor(term_height - 2, column+2);
 		else if (column >= term_width - 3) move_cursor(row, term_width - 2);
 		else move_cursor(row, column+2);
-
-#ifdef __linux__
-		enable_raw_mode();
-#endif
 
 		char keycap = key();
 
@@ -420,8 +416,9 @@ int edit_text() {
 			lines.push_back("");
 		for (int i = lines[row].length(); i <= column; i++)
 			lines[row].push_back(' ');
-
+#ifdef _WIN32
 		render(row, column, move_mode);
+#endif
 	}
 	return 1;
 }
