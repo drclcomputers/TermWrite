@@ -37,7 +37,7 @@ std::vector <std::string> lines;
 #include<conio.h>
 #define NOMINMAX
 #include<windows.h>
-char key() {
+unsigned char key() {
 	return _getch();
 }
 int getcolumns() {
@@ -164,7 +164,7 @@ void enable_cooked_mode() {
 	tcsetattr(STDIN_FILENO, TCSANOW, &tty); // Apply settings
 }
 
-char key() {
+unsigned char key() {
 	char ch;
 	while (read(STDIN_FILENO, &ch, 1) != 1);
 	return ch;
@@ -336,7 +336,7 @@ int edit_text() {
 		else if (column >= term_width - 3) move_cursor(row, term_width - 2);
 		else move_cursor(row, column+2);
 
-		char keycap = key();
+		unsigned char keycap = key();
 
 		if (move_mode) {
 			if ((keycap == 119 || keycap == 87) && row > 1) //up
@@ -388,8 +388,14 @@ int edit_text() {
 
 				if (saved) saved = 0;
 			}
-			else if (keycap == 127) {
-				
+			else if (keycap == 0xE0) {
+				keycap = key();
+				if (keycap == 0x53) {
+					if (column <= lines[row].length()) {
+						lines[row].erase(lines[row].begin() + column - 1);
+						saved = 0; 
+					}
+				}
 			}
 			else if (keycap == 13|| keycap == 10) { //newline
 				if (column > term_width - 3) start_column = 1, end_column = term_width - 3;
