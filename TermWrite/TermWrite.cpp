@@ -388,7 +388,7 @@ int edit_text() {
 
 				if (saved) saved = 0;
 			}
-			else if (keycap == 0xE0) {
+			else if (keycap == 0xE0) { //delete key
 				keycap = key();
 				if (keycap == 0x53) {
 					if (column <= lines[row].length()) {
