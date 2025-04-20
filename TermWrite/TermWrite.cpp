@@ -236,46 +236,12 @@ void render(int row, int column, bool movemode) {
 }
 #endif
 
-/*
-void render(int row, int column, bool movemode) {
-	std::cout << BLACKBG << WHITE;
-	CLEAR_SCREEN;
-	move_cursor(1, -2);
-	for (int i = start_row; i <= end_row && i < lines.size(); i++) {
-		if (lines[i].length()) {
-			std::string aux;
-			int line_length = lines[i].length();
-			int start = std::min(start_column - 1, line_length);
-			int length = std::max(0, std::min(end_column - start - 2, line_length - start));
-
-			aux = lines[i].substr(start, length);
-			
-			if (i == lines.size() - 1) std::cout << i << ' ' << aux;
-			else std::cout << i << ' ' << aux << '\n';
-		}
-		else {
-			if (i == lines.size() - 1) std::cout << i << ' ' << " ";
-			else std::cout << i << ' ' << " " << '\n';
-		}
-	}
-
-	move_cursor(term_height, -2);
-	std::cout << "                                                 ";
-	move_cursor(term_height, -2);
-	std::cout << GRAYBG << WHITE;
-	if (!movemode) std::cout << "Write Mode ";
-	else std::cout << "Move Mode ";
-	std::cout << row << ' ' << column << "    ";
-	if (!saved) std::cout << "*not saved*";
-	else std::cout << "*saved*";
-	std::cout << BLACKBG << WHITE;
-}*/
-
 bool open_file(char* filename) {
 	std::ifstream f(filename);
 	if (!f) return 0;
 
 	std::string aux;
+	lines.push_back("");
 	while (std::getline(f, aux))
 		lines.push_back(aux);
 	f.close();
