@@ -274,7 +274,6 @@ bool open_file(char* filename) {
 	if (!f) return 0;
 
 	std::string aux;
-	lines.push_back("");
 	while (std::getline(f, aux))
 		lines.push_back(aux);
 	f.close();
@@ -379,7 +378,7 @@ int edit_text() {
 				}
 				else if (row > 1) {
 					if (!lines[row].empty()) lines[row - 1].append(lines[row]);
-					column = lines[row - 1].length() - 1;
+					column = lines[row - 1].length() + 1;
 					if (column > term_width - 3) start_column=column-term_width+3, end_column = column;
 					lines.erase(lines.begin() + row);
 					--row;
@@ -415,10 +414,10 @@ int edit_text() {
 				if (saved) saved = 0;
 			}
 		}
-		for (int i = lines.size(); i <= row; i++)
+		while (lines.size() <= row)
 			lines.push_back("");
-		for (int i = lines[row].length(); i <= column; i++)
-			lines[row].push_back(' ');
+		while (lines[row].length() < column)
+			lines[row] += ' ';
 
 		render(row, column, move_mode);
 	}
@@ -435,7 +434,7 @@ int main(int argc, char* argv[]) {
 		edit_text();
 	}
 	else if (argc == 2) {
-		if (strcmp("-h", argv[1]) == 0 || strcmp("-help", argv[1]) ){
+		if (strcmp("-h", argv[1]) == 0 || strcmp("-help", argv[1]) == 0){
 			std::cout<<"TermWrite - ver 1.0\n\nWrite 'termwrite' to create a new file\nWrite 'termwrite <filename>' to open a file\n";
 			return 0;
 		}
