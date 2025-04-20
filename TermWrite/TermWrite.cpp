@@ -56,15 +56,17 @@ int getrows() {
 	rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 	return rows;
 }
+
 int term_height = getrows(), term_width = getcolumns();
 int start_row = 1, end_row = term_height - 2, start_column = 1, end_column = term_width - 3;
 bool saved = 0;
+
 void move_cursor(int row, int column) {
 	HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-	COORD position = {column-1, row-1};
-
+	COORD position = { column - 1, row - 1 };
 	SetConsoleCursorPosition(hStdout, position);
 }
+
 void render(int row, int column, bool movemode) {
 	static int prev_start_row = -1, prev_start_column = -1;
 	static int prev_term_height = -1, prev_term_width = -1;
@@ -185,7 +187,7 @@ int term_height = getrows(), term_width = getcolumns();
 int start_row = 1, end_row = term_height - 2, start_column = 1, end_column = term_width - 3;
 bool saved = 0;
 void move_cursor(int row, int column) {
-	std::cout << "\033[" << row << ';' << column + nrdig(row) + 1 << 'H'; //\033[%d;%dH
+	std::cout << "\033[" << row << ';' << column << 'H'; //\033[%d;%dH
 }
 void render(int row, int column, bool movemode) {
 	static std::vector<std::string> prev_display_lines;
@@ -331,9 +333,9 @@ int edit_text() {
 		term_height = getrows(), term_width = getcolumns();
 		
 		if (row >= term_height - 2 && column >= term_width - 3) move_cursor(term_height - 2, term_width - 2);
-		else if (row >= term_height - 2) move_cursor(term_height - 2, column+2);
+		else if (row >= term_height - 2) move_cursor(term_height - 2, column + nrdig(row) + 1);
 		else if (column >= term_width - 3) move_cursor(row, term_width - 2);
-		else move_cursor(row, column+2);
+		else move_cursor(row, column+nrdig(row)+1);
 
 		unsigned char keycap = key();
 
